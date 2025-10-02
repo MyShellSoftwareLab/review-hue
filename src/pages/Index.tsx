@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TokenInput } from "@/components/TokenInput";
 import { PRCounter } from "@/components/PRCounter";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,7 @@ const Index = () => {
   const [prCount, setPrCount] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchPRs = async (githubToken: string) => {
+  const fetchPRs = async (githubToken: string, showToast = true) => {
     setIsLoading(true);
     try {
       // Get the authenticated user
@@ -52,10 +52,12 @@ const Index = () => {
       setPrCount(data.total_count);
       setToken(githubToken);
       
-      toast({
-        title: "Success!",
-        description: `Found ${data.total_count} pull request${data.total_count !== 1 ? 's' : ''} for review`,
-      });
+      if (showToast) {
+        toast({
+          title: "Success!",
+          description: `Found ${data.total_count} pull request${data.total_count !== 1 ? 's' : ''} for review`,
+        });
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -78,6 +80,17 @@ const Index = () => {
     setToken("");
     setPrCount(null);
   };
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    if (!token) return;
+
+    const interval = setInterval(() => {
+      fetchPRs(token, false); // Silent refresh, no toast
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [token]);
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
