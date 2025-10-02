@@ -1,11 +1,116 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { TokenInput } from "@/components/TokenInput";
+import { PRCounter } from "@/components/PRCounter";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
+import { LogOut, RefreshCw } from "lucide-react";
+
+interface PullRequest {
+  id: number;
+  title: string;
+  html_url: string;
+}
 
 const Index = () => {
+  const [token, setToken] = useState<string>("");
+  const [prCount, setPrCount] = useState<number | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const fetchPRs = async (githubToken: string) => {
+    setIsLoading(true);
+    try {
+      // Get the authenticated user
+      const userResponse = await fetch("https://api.github.com/user", {
+        headers: {
+          Authorization: `token ${githubToken}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      });
+
+      if (!userResponse.ok) {
+        throw new Error("Invalid token or authentication failed");
+      }
+
+      const user = await userResponse.json();
+
+      // Get pull requests where the user is requested as a reviewer
+      const prsResponse = await fetch(
+        `https://api.github.com/search/issues?q=type:pr+state:open+review-requested:${user.login}`,
+        {
+          headers: {
+            Authorization: `token ${githubToken}`,
+            Accept: "application/vnd.github.v3+json",
+          },
+        }
+      );
+
+      if (!prsResponse.ok) {
+        throw new Error("Failed to fetch pull requests");
+      }
+
+      const data = await prsResponse.json();
+      setPrCount(data.total_count);
+      setToken(githubToken);
+      
+      toast({
+        title: "Success!",
+        description: `Found ${data.total_count} pull request${data.total_count !== 1 ? 's' : ''} for review`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to fetch pull requests",
+        variant: "destructive",
+      });
+      setPrCount(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    if (token) {
+      fetchPRs(token);
+    }
+  };
+
+  const handleLogout = () => {
+    setToken("");
+    setPrCount(null);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <div className="w-full max-w-4xl">
+        {prCount === null ? (
+          <TokenInput onSubmit={fetchPRs} isLoading={isLoading} />
+        ) : (
+          <div className="space-y-8">
+            <div className="flex justify-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleRefresh}
+                disabled={isLoading}
+                className="gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleLogout}
+                className="gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </Button>
+            </div>
+            
+            <PRCounter count={prCount} />
+          </div>
+        )}
       </div>
     </div>
   );
