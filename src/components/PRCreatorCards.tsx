@@ -17,9 +17,9 @@ export const PRCreatorCards = ({ creators }: PRCreatorCardsProps) => {
 
   return (
     <div className="flex justify-center w-full">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl">
+      <div className="flex flex-wrap justify-center gap-4 max-w-4xl">
         {creators.map((creator) => (
-        <Card key={creator.login} className="hover:shadow-lg transition-shadow">
+        <Card key={creator.login} className="hover:shadow-lg transition-shadow w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.67rem)]">
           <CardContent className="flex items-center gap-3 p-4">
             <Avatar className="h-10 w-10">
               <AvatarImage src={creator.avatar_url} alt={creator.login} />
