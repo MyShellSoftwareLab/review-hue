@@ -16,8 +16,9 @@ export const PRCreatorCards = ({ creators }: PRCreatorCardsProps) => {
   if (creators.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-      {creators.map((creator) => (
+    <div className="flex justify-center w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-4xl">
+        {creators.map((creator) => (
         <Card key={creator.login} className="hover:shadow-lg transition-shadow">
           <CardContent className="flex items-center gap-3 p-4">
             <Avatar className="h-10 w-10">
@@ -33,7 +34,8 @@ export const PRCreatorCards = ({ creators }: PRCreatorCardsProps) => {
             </Badge>
           </CardContent>
         </Card>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
