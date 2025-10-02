@@ -124,33 +124,35 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      {prCount !== null && (
+        <div className="fixed top-6 right-6 flex gap-3 z-10">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isLoading}
+            className="gap-2"
+          >
+            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="gap-2"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </Button>
+        </div>
+      )}
+      
       <div className="w-full max-w-4xl">
         {prCount === null ? (
           <TokenInput onSubmit={fetchPRs} isLoading={isLoading} />
         ) : (
           <div className="space-y-8">
-            <div className="flex justify-center gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={isLoading}
-                className="gap-2"
-              >
-                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-                Refresh
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleLogout}
-                className="gap-2"
-              >
-                <LogOut className="w-4 h-4" />
-                Logout
-              </Button>
-            </div>
-            
             <PRCounter count={prCount} />
             
             <PRCreatorCards creators={prCreators} />
