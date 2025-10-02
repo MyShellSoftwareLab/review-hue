@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { TokenInput } from "@/components/TokenInput";
 import { PRCounter } from "@/components/PRCounter";
+import { PRCreatorCards } from "@/components/PRCreatorCards";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import { LogOut, RefreshCw } from "lucide-react";
@@ -9,11 +10,22 @@ interface PullRequest {
   id: number;
   title: string;
   html_url: string;
+  user: {
+    login: string;
+    avatar_url: string;
+  };
+}
+
+interface PRCreator {
+  login: string;
+  avatar_url: string;
+  count: number;
 }
 
 const Index = () => {
   const [token, setToken] = useState<string>("");
   const [prCount, setPrCount] = useState<number | null>(null);
+  const [prCreators, setPrCreators] = useState<PRCreator[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const fetchPRs = async (githubToken: string, showToast = true) => {
@@ -50,6 +62,23 @@ const Index = () => {
 
       const data = await prsResponse.json();
       setPrCount(data.total_count);
+      
+      // Group PRs by creator
+      const creatorsMap = new Map<string, PRCreator>();
+      data.items.forEach((pr: PullRequest) => {
+        const login = pr.user.login;
+        if (creatorsMap.has(login)) {
+          creatorsMap.get(login)!.count++;
+        } else {
+          creatorsMap.set(login, {
+            login,
+            avatar_url: pr.user.avatar_url,
+            count: 1,
+          });
+        }
+      });
+      
+      setPrCreators(Array.from(creatorsMap.values()));
       setToken(githubToken);
       
       if (showToast) {
@@ -79,6 +108,7 @@ const Index = () => {
   const handleLogout = () => {
     setToken("");
     setPrCount(null);
+    setPrCreators([]);
   };
 
   // Auto-refresh every 30 seconds
@@ -120,6 +150,8 @@ const Index = () => {
                 Logout
               </Button>
             </div>
+            
+            <PRCreatorCards creators={prCreators} />
             
             <PRCounter count={prCount} />
           </div>
