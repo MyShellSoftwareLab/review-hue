@@ -151,9 +151,9 @@ const Index = () => {
               </Button>
             </div>
             
-            <PRCreatorCards creators={prCreators} />
-            
             <PRCounter count={prCount} />
+            
+            <PRCreatorCards creators={prCreators} />
           </div>
         )}
       </div>
