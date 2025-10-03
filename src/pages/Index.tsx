@@ -33,6 +33,15 @@ const Index = () => {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const previousPrCountRef = useRef<number | null>(null);
 
+  // Load token from localStorage on mount
+  useEffect(() => {
+    const savedToken = localStorage.getItem("github_token");
+    if (savedToken) {
+      setToken(savedToken);
+      fetchPRs(savedToken, false);
+    }
+  }, []);
+
   const playBeep = () => {
     if (!soundEnabled) return;
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
@@ -185,6 +194,9 @@ const Index = () => {
       setPrCount(newCount);
       setToken(githubToken);
       
+      // Save token to localStorage
+      localStorage.setItem("github_token", githubToken);
+      
       if (showToast) {
         toast({
           title: "Success!",
@@ -214,6 +226,14 @@ const Index = () => {
     setPrCount(null);
     setPrCreators([]);
     previousPrCountRef.current = null;
+    
+    // Clear token from localStorage
+    localStorage.removeItem("github_token");
+    
+    toast({
+      title: "Logged out",
+      description: "Your GitHub token has been removed",
+    });
   };
 
   // Auto-refresh every 30 seconds
