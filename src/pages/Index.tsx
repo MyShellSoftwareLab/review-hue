@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { TokenInput } from "@/components/TokenInput";
 import { PRCounter } from "@/components/PRCounter";
 import { PRCreatorCards } from "@/components/PRCreatorCards";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { LogOut, RefreshCw } from "lucide-react";
+import { LogOut, RefreshCw, Volume2 } from "lucide-react";
 
 interface PullRequest {
   id: number;
@@ -28,6 +30,51 @@ const Index = () => {
   const [prCount, setPrCount] = useState<number | null>(null);
   const [prCreators, setPrCreators] = useState<PRCreator[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
+  const previousPrCountRef = useRef<number | null>(null);
+
+  const playBeep = () => {
+    if (!soundEnabled) return;
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+  };
+
+  const playCelebration = () => {
+    if (!soundEnabled) return;
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    // Play ascending notes for celebration
+    const frequencies = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+    frequencies.forEach((freq, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.frequency.value = freq;
+      oscillator.type = 'sine';
+      
+      const startTime = audioContext.currentTime + (index * 0.15);
+      gainNode.gain.setValueAtTime(0.2, startTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+      
+      oscillator.start(startTime);
+      oscillator.stop(startTime + 0.3);
+    });
+  };
 
   const fetchPRs = async (githubToken: string, showToast = true) => {
     setIsLoading(true);
@@ -118,6 +165,24 @@ const Index = () => {
       });
       
       setPrCreators(Array.from(creatorsMap.values()));
+      
+      // Check for PR count changes and play sounds
+      const newCount = data.total_count;
+      const previousCount = previousPrCountRef.current;
+      
+      if (previousCount !== null) {
+        // New PR appeared
+        if (newCount > previousCount) {
+          playBeep();
+        }
+        // All PRs reviewed
+        if (previousCount > 0 && newCount === 0) {
+          playCelebration();
+        }
+      }
+      
+      previousPrCountRef.current = newCount;
+      setPrCount(newCount);
       setToken(githubToken);
       
       if (showToast) {
@@ -148,6 +213,7 @@ const Index = () => {
     setToken("");
     setPrCount(null);
     setPrCreators([]);
+    previousPrCountRef.current = null;
   };
 
   // Auto-refresh every 30 seconds
@@ -165,6 +231,20 @@ const Index = () => {
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
       {prCount !== null && (
         <div className="fixed top-6 right-6 flex gap-3 z-10">
+          <div className="flex items-center gap-2 bg-background border rounded-md px-3 py-2">
+            <Checkbox 
+              id="sound-toggle"
+              checked={soundEnabled}
+              onCheckedChange={(checked) => setSoundEnabled(checked as boolean)}
+            />
+            <Label 
+              htmlFor="sound-toggle" 
+              className="text-sm cursor-pointer flex items-center gap-1"
+            >
+              <Volume2 className="w-4 h-4" />
+              Sound
+            </Label>
+          </div>
           <Button
             variant="outline"
             size="sm"
