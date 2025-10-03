@@ -20,6 +20,7 @@ interface PRCreator {
   login: string;
   avatar_url: string;
   count: number;
+  unresolvedComments: number;
 }
 
 const Index = () => {
@@ -63,17 +64,55 @@ const Index = () => {
       const data = await prsResponse.json();
       setPrCount(data.total_count);
       
-      // Group PRs by creator
+      // Fetch unresolved comments for each PR
+      const prCommentsPromises = data.items.map(async (pr: PullRequest) => {
+        const prNumber = pr.html_url.split('/').pop();
+        const repoUrl = pr.html_url.split('/pull/')[0];
+        const [owner, repo] = repoUrl.split('/').slice(-2);
+        
+        try {
+          const reviewCommentsResponse = await fetch(
+            `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}/comments`,
+            {
+              headers: {
+                Authorization: `token ${githubToken}`,
+                Accept: "application/vnd.github.v3+json",
+              },
+            }
+          );
+          
+          if (reviewCommentsResponse.ok) {
+            const comments = await reviewCommentsResponse.json();
+            // Count unresolved comments (comments without a resolved state or in_reply_to_id that's unresolved)
+            const unresolvedCount = comments.filter((comment: any) => 
+              comment.in_reply_to_id === undefined || comment.in_reply_to_id === null
+            ).length;
+            return { prUser: pr.user.login, unresolvedCount };
+          }
+        } catch (error) {
+          console.error('Error fetching comments for PR:', error);
+        }
+        return { prUser: pr.user.login, unresolvedCount: 0 };
+      });
+      
+      const prCommentsResults = await Promise.all(prCommentsPromises);
+      
+      // Group PRs by creator and aggregate unresolved comments
       const creatorsMap = new Map<string, PRCreator>();
-      data.items.forEach((pr: PullRequest) => {
+      data.items.forEach((pr: PullRequest, index: number) => {
         const login = pr.user.login;
+        const unresolvedComments = prCommentsResults[index].unresolvedCount;
+        
         if (creatorsMap.has(login)) {
-          creatorsMap.get(login)!.count++;
+          const creator = creatorsMap.get(login)!;
+          creator.count++;
+          creator.unresolvedComments += unresolvedComments;
         } else {
           creatorsMap.set(login, {
             login,
             avatar_url: pr.user.avatar_url,
             count: 1,
+            unresolvedComments,
           });
         }
       });
