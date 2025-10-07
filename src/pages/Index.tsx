@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { TokenInput } from "@/components/TokenInput";
 import { PRCounter } from "@/components/PRCounter";
 import { PRCreatorCards } from "@/components/PRCreatorCards";
+import { PRLeaderboard } from "@/components/PRLeaderboard";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -25,10 +26,17 @@ interface PRCreator {
   unresolvedComments: number;
 }
 
+interface LeaderboardEntry {
+  login: string;
+  avatar_url: string;
+  prCount: number;
+}
+
 const Index = () => {
   const [token, setToken] = useState<string>("");
   const [prCount, setPrCount] = useState<number | null>(null);
   const [prCreators, setPrCreators] = useState<PRCreator[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const previousPrCountRef = useRef<number | null>(null);
@@ -39,6 +47,7 @@ const Index = () => {
     if (savedToken) {
       setToken(savedToken);
       fetchPRs(savedToken, false);
+      fetchMonthlyLeaderboard(savedToken);
     }
   }, []);
 
@@ -83,6 +92,64 @@ const Index = () => {
       oscillator.start(startTime);
       oscillator.stop(startTime + 0.3);
     });
+  };
+
+  const fetchMonthlyLeaderboard = async (githubToken: string) => {
+    try {
+      const now = new Date();
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const formattedDate = firstDayOfMonth.toISOString().split('T')[0];
+      
+      const userResponse = await fetch("https://api.github.com/user", {
+        headers: {
+          Authorization: `token ${githubToken}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      });
+
+      if (!userResponse.ok) return;
+      
+      const user = await userResponse.json();
+      
+      // Get all PRs from user's organization/repos created this month
+      const prsResponse = await fetch(
+        `https://api.github.com/search/issues?q=type:pr+created:>=${formattedDate}+author:${user.login}+OR+involves:${user.login}`,
+        {
+          headers: {
+            Authorization: `token ${githubToken}`,
+            Accept: "application/vnd.github.v3+json",
+          },
+        }
+      );
+
+      if (!prsResponse.ok) return;
+      
+      const data = await prsResponse.json();
+      
+      // Count PRs by creator
+      const creatorsMap = new Map<string, LeaderboardEntry>();
+      data.items.forEach((pr: PullRequest) => {
+        const login = pr.user.login;
+        if (creatorsMap.has(login)) {
+          creatorsMap.get(login)!.prCount++;
+        } else {
+          creatorsMap.set(login, {
+            login,
+            avatar_url: pr.user.avatar_url,
+            prCount: 1,
+          });
+        }
+      });
+      
+      // Sort by PR count and take top 10
+      const sortedLeaderboard = Array.from(creatorsMap.values())
+        .sort((a, b) => b.prCount - a.prCount)
+        .slice(0, 10);
+      
+      setLeaderboard(sortedLeaderboard);
+    } catch (error) {
+      console.error("Failed to fetch leaderboard:", error);
+    }
   };
 
   const fetchPRs = async (githubToken: string, showToast = true) => {
@@ -218,6 +285,7 @@ const Index = () => {
   const handleRefresh = () => {
     if (token) {
       fetchPRs(token);
+      fetchMonthlyLeaderboard(token);
     }
   };
 
@@ -225,6 +293,7 @@ const Index = () => {
     setToken("");
     setPrCount(null);
     setPrCreators([]);
+    setLeaderboard([]);
     previousPrCountRef.current = null;
     
     // Clear token from localStorage
@@ -248,7 +317,7 @@ const Index = () => {
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-6">
+    <div className="min-h-screen bg-background p-6">
       {prCount !== null && (
         <div className="fixed top-6 right-6 flex gap-3 z-10">
           <div className="flex items-center gap-2 bg-background border rounded-md px-3 py-2">
@@ -287,17 +356,22 @@ const Index = () => {
         </div>
       )}
       
-      <div className="w-full max-w-4xl">
-        {prCount === null ? (
-          <TokenInput onSubmit={fetchPRs} isLoading={isLoading} />
-        ) : (
+      {prCount === null ? (
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="w-full max-w-4xl">
+            <TokenInput onSubmit={fetchPRs} isLoading={isLoading} />
+          </div>
+        </div>
+      ) : (
+        <div className="flex gap-6 justify-center items-start pt-20">
+          <PRLeaderboard entries={leaderboard} />
+          
           <div className="space-y-8">
             <PRCounter count={prCount} />
-            
             <PRCreatorCards creators={prCreators} />
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };
