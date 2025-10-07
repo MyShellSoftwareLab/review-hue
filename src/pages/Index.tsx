@@ -111,29 +111,9 @@ const Index = () => {
       
       const user = await userResponse.json();
       
-      // Get user's repositories
-      const reposResponse = await fetch(
-        `https://api.github.com/user/repos?per_page=100&affiliation=owner,collaborator,organization_member`,
-        {
-          headers: {
-            Authorization: `token ${githubToken}`,
-            Accept: "application/vnd.github.v3+json",
-          },
-        }
-      );
-
-      if (!reposResponse.ok) return;
-      
-      const repos = await reposResponse.json();
-      
-      // Build search query for PRs in user's repos
-      const repoQueries = repos.slice(0, 10).map((repo: any) => `repo:${repo.full_name}`).join(' ');
-      
-      if (!repoQueries) return;
-      
-      // Get all PRs created in these repos this month
+      // Get all PRs assigned to user for review this month (any state)
       const prsResponse = await fetch(
-        `https://api.github.com/search/issues?q=type:pr+created:>=${formattedDate}+${repoQueries}`,
+        `https://api.github.com/search/issues?q=type:pr+review-requested:${user.login}+created:>=${formattedDate}`,
         {
           headers: {
             Authorization: `token ${githubToken}`,

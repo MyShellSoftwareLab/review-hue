@@ -25,9 +25,9 @@ export const PRLeaderboard = ({ entries }: PRLeaderboardProps) => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Trophy className="w-5 h-5" />
-          Top Contributors
+          Review Requests
         </CardTitle>
-        <p className="text-sm text-muted-foreground">PRs created this month</p>
+        <p className="text-sm text-muted-foreground">PRs assigned this month</p>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
