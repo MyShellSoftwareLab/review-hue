@@ -363,12 +363,18 @@ const Index = () => {
           </div>
         </div>
       ) : (
-        <div className="flex gap-12 justify-center items-start pt-20">
-          <PRLeaderboard entries={leaderboard} />
+        <div className="grid grid-cols-2 gap-8 h-screen pt-20 px-6">
+          <div className="flex justify-end border-r pr-8">
+            <div className="w-full max-w-md">
+              <PRLeaderboard entries={leaderboard} />
+            </div>
+          </div>
           
-          <div className="space-y-8">
-            <PRCounter count={prCount} />
-            <PRCreatorCards creators={prCreators} />
+          <div className="flex justify-start pl-8">
+            <div className="space-y-8">
+              <PRCounter count={prCount} />
+              <PRCreatorCards creators={prCreators} />
+            </div>
           </div>
         </div>
       )}
