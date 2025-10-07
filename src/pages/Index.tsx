@@ -111,9 +111,9 @@ const Index = () => {
       
       const user = await userResponse.json();
       
-      // Get all PRs from user's organization/repos created this month
+      // Get all PRs reviewed by the user this month (merged or closed)
       const prsResponse = await fetch(
-        `https://api.github.com/search/issues?q=type:pr+created:>=${formattedDate}+author:${user.login}+OR+involves:${user.login}`,
+        `https://api.github.com/search/issues?q=type:pr+reviewed-by:${user.login}+updated:>=${formattedDate}`,
         {
           headers: {
             Authorization: `token ${githubToken}`,
