@@ -141,10 +141,10 @@ const Index = () => {
         }
       });
       
-      // Sort by PR count and take top 10
+      // Sort by PR count and take top 6
       const sortedLeaderboard = Array.from(creatorsMap.values())
         .sort((a, b) => b.prCount - a.prCount)
-        .slice(0, 10);
+        .slice(0, 6);
       
       setLeaderboard(sortedLeaderboard);
     } catch (error) {
@@ -363,7 +363,7 @@ const Index = () => {
           </div>
         </div>
       ) : (
-        <div className="flex gap-6 justify-center items-start pt-20">
+        <div className="flex gap-12 justify-center items-start pt-20">
           <PRLeaderboard entries={leaderboard} />
           
           <div className="space-y-8">
