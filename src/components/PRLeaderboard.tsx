@@ -27,7 +27,7 @@ export const PRLeaderboard = ({ topEntries, bottomEntries }: PRLeaderboardProps)
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Trophy className="w-5 h-5" />
-            Top Reviewers
+            Top Contributors
           </CardTitle>
           <p className="text-sm text-muted-foreground">Most PRs assigned this month</p>
         </CardHeader>

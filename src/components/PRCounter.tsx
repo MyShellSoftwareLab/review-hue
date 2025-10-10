@@ -32,7 +32,7 @@ export const PRCounter = ({ count, className }: PRCounterProps) => {
         count > 5 ? "border-critical/30" : count > 2 ? "border-warning/30" : "border-success/30"
       )}>
         <div className={cn(
-          "text-9xl font-bold transition-colors duration-500 tabular-nums",
+          "text-7xl font-bold transition-colors duration-500 tabular-nums",
           getStatusColor()
         )}>
           {count}
