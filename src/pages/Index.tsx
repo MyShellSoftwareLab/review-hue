@@ -111,24 +111,35 @@ const Index = () => {
       
       const user = await userResponse.json();
       
-      // Get all PRs assigned to user for review this month (any state)
-      const prsResponse = await fetch(
-        `https://api.github.com/search/issues?q=type:pr+review-requested:${user.login}+created:>=${formattedDate}`,
-        {
-          headers: {
-            Authorization: `token ${githubToken}`,
-            Accept: "application/vnd.github.v3+json",
-          },
-        }
-      );
-
-      if (!prsResponse.ok) return;
+      // Fetch all PRs with pagination
+      let allPRs: PullRequest[] = [];
+      let page = 1;
+      let hasMore = true;
       
-      const data = await prsResponse.json();
+      while (hasMore) {
+        const prsResponse = await fetch(
+          `https://api.github.com/search/issues?q=type:pr+review-requested:${user.login}+created:>=${formattedDate}&per_page=100&page=${page}`,
+          {
+            headers: {
+              Authorization: `token ${githubToken}`,
+              Accept: "application/vnd.github.v3+json",
+            },
+          }
+        );
+
+        if (!prsResponse.ok) return;
+        
+        const data = await prsResponse.json();
+        allPRs = [...allPRs, ...data.items];
+        
+        // Check if there are more pages
+        hasMore = data.items.length === 100;
+        page++;
+      }
       
       // Count PRs by creator
       const creatorsMap = new Map<string, LeaderboardEntry>();
-      data.items.forEach((pr: PullRequest) => {
+      allPRs.forEach((pr: PullRequest) => {
         const login = pr.user.login;
         if (creatorsMap.has(login)) {
           creatorsMap.get(login)!.prCount++;
