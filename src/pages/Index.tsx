@@ -36,7 +36,8 @@ const Index = () => {
   const [token, setToken] = useState<string>("");
   const [prCount, setPrCount] = useState<number | null>(null);
   const [prCreators, setPrCreators] = useState<PRCreator[]>([]);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [topLeaderboard, setTopLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [bottomLeaderboard, setBottomLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const previousPrCountRef = useRef<number | null>(null);
@@ -152,12 +153,18 @@ const Index = () => {
         }
       });
       
-      // Sort by PR count and take top 6
+      // Sort by PR count
       const sortedLeaderboard = Array.from(creatorsMap.values())
-        .sort((a, b) => b.prCount - a.prCount)
-        .slice(0, 6);
+        .sort((a, b) => b.prCount - a.prCount);
       
-      setLeaderboard(sortedLeaderboard);
+      // Take top 5 and bottom 3
+      const topEntries = sortedLeaderboard.slice(0, 5);
+      const bottomEntries = sortedLeaderboard.length > 5 
+        ? sortedLeaderboard.slice(-3).reverse() 
+        : [];
+      
+      setTopLeaderboard(topEntries);
+      setBottomLeaderboard(bottomEntries);
     } catch (error) {
       console.error("Failed to fetch leaderboard:", error);
     }
@@ -304,7 +311,8 @@ const Index = () => {
     setToken("");
     setPrCount(null);
     setPrCreators([]);
-    setLeaderboard([]);
+    setTopLeaderboard([]);
+    setBottomLeaderboard([]);
     previousPrCountRef.current = null;
     
     // Clear token from localStorage
@@ -377,7 +385,7 @@ const Index = () => {
         <div className="grid grid-cols-2 gap-8 h-screen pt-20 px-6">
           <div className="flex justify-end border-r pr-8">
             <div className="w-full max-w-md">
-              <PRLeaderboard entries={leaderboard} />
+              <PRLeaderboard topEntries={topLeaderboard} bottomEntries={bottomLeaderboard} />
             </div>
           </div>
           
