@@ -3,6 +3,7 @@ import { TokenInput } from "@/components/TokenInput";
 import { PRCounter } from "@/components/PRCounter";
 import { PRCreatorCards } from "@/components/PRCreatorCards";
 import { PRLeaderboard } from "@/components/PRLeaderboard";
+import { PRHeatmap } from "@/components/PRHeatmap";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -13,6 +14,7 @@ interface PullRequest {
   id: number;
   title: string;
   html_url: string;
+  created_at: string;
   user: {
     login: string;
     avatar_url: string;
@@ -32,12 +34,18 @@ interface LeaderboardEntry {
   prCount: number;
 }
 
+interface HeatmapData {
+  week: number;
+  days: { dayOfWeek: number; count: number; date: string }[];
+}
+
 const Index = () => {
   const [token, setToken] = useState<string>("");
   const [prCount, setPrCount] = useState<number | null>(null);
   const [prCreators, setPrCreators] = useState<PRCreator[]>([]);
   const [topLeaderboard, setTopLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [bottomLeaderboard, setBottomLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const previousPrCountRef = useRef<number | null>(null);
@@ -165,6 +173,67 @@ const Index = () => {
       
       setTopLeaderboard(topEntries);
       setBottomLeaderboard(bottomEntries);
+      
+      // Calculate heatmap data
+      const today = new Date();
+      const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+      const monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      
+      // Create a map of date to PR count
+      const prCountByDate = new Map<string, number>();
+      allPRs.forEach((pr: PullRequest) => {
+        const createdAt = new Date(pr.created_at);
+        const dateKey = createdAt.toISOString().split('T')[0];
+        prCountByDate.set(dateKey, (prCountByDate.get(dateKey) || 0) + 1);
+      });
+      
+      // Build heatmap data structure (weeks x days)
+      const heatmap: HeatmapData[] = [];
+      let currentDate = new Date(monthStart);
+      let weekNumber = 1;
+      let currentWeek: HeatmapData = { week: weekNumber, days: [] };
+      
+      // Fill in empty days before the first day of month
+      const firstDayOfWeek = monthStart.getDay();
+      for (let i = 0; i < firstDayOfWeek; i++) {
+        currentWeek.days.push({ dayOfWeek: i, count: 0, date: '' });
+      }
+      
+      while (currentDate <= monthEnd) {
+        const dayOfWeek = currentDate.getDay();
+        const dateKey = currentDate.toISOString().split('T')[0];
+        const count = prCountByDate.get(dateKey) || 0;
+        
+        currentWeek.days.push({
+          dayOfWeek,
+          count,
+          date: dateKey,
+        });
+        
+        // Start new week on Sunday (day 0)
+        if (dayOfWeek === 6 && currentWeek.days.length === 7) {
+          heatmap.push(currentWeek);
+          weekNumber++;
+          currentWeek = { week: weekNumber, days: [] };
+        }
+        
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+      
+      // Add the last partial week if it exists
+      if (currentWeek.days.length > 0) {
+        // Fill remaining days
+        while (currentWeek.days.length < 7) {
+          currentWeek.days.push({ 
+            dayOfWeek: currentWeek.days.length, 
+            count: 0, 
+            date: '' 
+          });
+        }
+        heatmap.push(currentWeek);
+      }
+      
+      setHeatmapData(heatmap);
     } catch (error) {
       console.error("Failed to fetch leaderboard:", error);
     }
@@ -313,6 +382,7 @@ const Index = () => {
     setPrCreators([]);
     setTopLeaderboard([]);
     setBottomLeaderboard([]);
+    setHeatmapData([]);
     previousPrCountRef.current = null;
     
     // Clear token from localStorage
@@ -382,14 +452,20 @@ const Index = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-8 h-screen pt-20 px-6">
-          <div className="flex justify-end border-r pr-8">
+        <div className="grid grid-cols-3 gap-6 h-screen pt-20 px-6">
+          <div className="flex justify-end border-r pr-6">
             <div className="w-full max-w-md">
               <PRLeaderboard topEntries={topLeaderboard} bottomEntries={bottomLeaderboard} />
             </div>
           </div>
           
-          <div className="flex justify-start pl-8">
+          <div className="flex justify-center border-r pr-6">
+            <div className="w-full max-w-lg">
+              <PRHeatmap data={heatmapData} />
+            </div>
+          </div>
+          
+          <div className="flex justify-start pl-6">
             <div className="space-y-8">
               <PRCounter count={prCount} />
               <PRCreatorCards creators={prCreators} />
