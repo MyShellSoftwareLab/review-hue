@@ -65,39 +65,18 @@ const Index = () => {
 
   const playBeep = () => {
     if (!soundEnabled) return;
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     
     if (theme === 'halloween') {
-      // Scary scream - descending pitch with vibrato
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      const lfoOscillator = audioContext.createOscillator(); // For vibrato
-      const lfoGain = audioContext.createGain();
-      
-      // Setup vibrato (trembling effect)
-      lfoOscillator.frequency.value = 8; // Vibrato speed
-      lfoGain.gain.value = 50; // Vibrato depth
-      lfoOscillator.connect(lfoGain);
-      lfoGain.connect(oscillator.frequency);
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      // Start high and descend quickly (scream effect)
-      oscillator.frequency.setValueAtTime(1200, audioContext.currentTime);
-      oscillator.frequency.exponentialRampToValueAtTime(300, audioContext.currentTime + 0.8);
-      oscillator.type = 'sawtooth'; // Harsh, scary sound
-      
-      // Volume envelope
-      gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-      gainNode.gain.linearRampToValueAtTime(0.4, audioContext.currentTime + 0.05);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.8);
-      
-      lfoOscillator.start(audioContext.currentTime);
-      oscillator.start(audioContext.currentTime);
-      lfoOscillator.stop(audioContext.currentTime + 0.8);
-      oscillator.stop(audioContext.currentTime + 0.8);
-    } else if (theme === 'christmas') {
+      // Play uploaded Halloween scream audio
+      const audio = new Audio('/halloween-scream.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(err => console.error('Error playing Halloween sound:', err));
+      return;
+    }
+    
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    if (theme === 'christmas') {
       // Bell ring
       const frequencies = [1047, 2093]; // C6 and C7 for bell effect
       frequencies.forEach((freq, index) => {
