@@ -511,7 +511,28 @@ const Index = () => {
   }, [token]);
 
   return (
-    <div className="min-h-screen bg-background p-6">
+    <div className="min-h-screen bg-background p-6 relative overflow-hidden">
+      {/* Theme-specific background animations */}
+      {theme === 'halloween' && (
+        <>
+          <div className="halloween-bat halloween-bat-1">🦇</div>
+          <div className="halloween-bat halloween-bat-2">🦇</div>
+          <div className="halloween-bat halloween-bat-3">🦇</div>
+          <div className="halloween-skeleton halloween-skeleton-1">💀</div>
+          <div className="halloween-skeleton halloween-skeleton-2">💀</div>
+        </>
+      )}
+      {theme === 'christmas' && (
+        <>
+          <div className="snowflake snowflake-1">❄️</div>
+          <div className="snowflake snowflake-2">❄️</div>
+          <div className="snowflake snowflake-3">❄️</div>
+          <div className="snowflake snowflake-4">❄️</div>
+          <div className="snowflake snowflake-5">❄️</div>
+          <div className="snowflake snowflake-6">❄️</div>
+        </>
+      )}
+      
       {prCount !== null && (
         <div className="fixed top-6 right-6 flex gap-3 z-10">
           <ThemeSelector />

@@ -144,4 +144,124 @@ All colors MUST be HSL.
     --border: 140 20% 25%;
     --accent: 0 72% 51%;
   }
+  
+  /* Halloween animations */
+  .halloween-bat {
+    position: fixed;
+    font-size: 2rem;
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  .halloween-bat-1 {
+    top: 10%;
+    animation: float-horizontal 15s infinite ease-in-out;
+  }
+  
+  .halloween-bat-2 {
+    top: 30%;
+    animation: float-horizontal 12s infinite ease-in-out 2s;
+  }
+  
+  .halloween-bat-3 {
+    top: 50%;
+    animation: float-horizontal 18s infinite ease-in-out 4s;
+  }
+  
+  .halloween-skeleton {
+    position: fixed;
+    font-size: 2.5rem;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  .halloween-skeleton-1 {
+    top: 20%;
+    right: 10%;
+    animation: float-vertical 8s infinite ease-in-out;
+  }
+  
+  .halloween-skeleton-2 {
+    top: 60%;
+    left: 5%;
+    animation: float-vertical 10s infinite ease-in-out 3s;
+  }
+  
+  @keyframes float-horizontal {
+    0%, 100% {
+      transform: translateX(-100px) translateY(0px);
+    }
+    50% {
+      transform: translateX(calc(100vw + 100px)) translateY(-30px);
+    }
+  }
+  
+  @keyframes float-vertical {
+    0%, 100% {
+      transform: translateY(0px) rotate(0deg);
+    }
+    50% {
+      transform: translateY(50px) rotate(10deg);
+    }
+  }
+  
+  /* Christmas animations */
+  .snowflake {
+    position: fixed;
+    top: -50px;
+    font-size: 1.5rem;
+    opacity: 0.8;
+    pointer-events: none;
+    z-index: 1;
+    animation: snowfall linear infinite;
+  }
+  
+  .snowflake-1 {
+    left: 10%;
+    animation-duration: 10s;
+    animation-delay: 0s;
+  }
+  
+  .snowflake-2 {
+    left: 25%;
+    animation-duration: 12s;
+    animation-delay: 2s;
+  }
+  
+  .snowflake-3 {
+    left: 45%;
+    animation-duration: 8s;
+    animation-delay: 4s;
+  }
+  
+  .snowflake-4 {
+    left: 60%;
+    animation-duration: 11s;
+    animation-delay: 1s;
+  }
+  
+  .snowflake-5 {
+    left: 75%;
+    animation-duration: 9s;
+    animation-delay: 3s;
+  }
+  
+  .snowflake-6 {
+    left: 90%;
+    animation-duration: 13s;
+    animation-delay: 5s;
+  }
+  
+  @keyframes snowfall {
+    0% {
+      transform: translateY(-50px) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(360deg);
+      opacity: 0.5;
+    }
+  }
 }
