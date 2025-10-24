@@ -120,4 +120,28 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Halloween theme */
+  .theme-halloween {
+    --background: 20 14% 8%;
+    --foreground: 25 100% 95%;
+    --primary: 25 100% 50%;
+    --primary-foreground: 25 10% 5%;
+    --card: 20 14% 10%;
+    --card-foreground: 25 100% 95%;
+    --border: 25 50% 25%;
+    --accent: 25 100% 50%;
+  }
+  
+  /* Christmas theme */
+  .theme-christmas {
+    --background: 140 30% 12%;
+    --foreground: 0 0% 95%;
+    --primary: 0 72% 51%;
+    --primary-foreground: 0 0% 100%;
+    --card: 140 30% 15%;
+    --card-foreground: 0 0% 95%;
+    --border: 140 20% 25%;
+    --accent: 0 72% 51%;
+  }
 }

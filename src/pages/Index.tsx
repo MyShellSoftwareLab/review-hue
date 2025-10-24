@@ -9,6 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { LogOut, RefreshCw, Volume2 } from "lucide-react";
+import { useTheme } from "@/contexts/ThemeContext";
+import { ThemeSelector } from "@/components/ThemeSelector";
 
 interface PullRequest {
   id: number;
@@ -40,6 +42,7 @@ interface HeatmapData {
 }
 
 const Index = () => {
+  const { theme } = useTheme();
   const [token, setToken] = useState<string>("");
   const [prCount, setPrCount] = useState<number | null>(null);
   const [prCreators, setPrCreators] = useState<PRCreator[]>([]);
@@ -63,44 +66,146 @@ const Index = () => {
   const playBeep = () => {
     if (!soundEnabled) return;
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
     
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-    
-    oscillator.frequency.value = 800;
-    oscillator.type = 'sine';
-    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-    
-    oscillator.start(audioContext.currentTime);
-    oscillator.stop(audioContext.currentTime + 0.2);
-  };
-
-  const playCelebration = () => {
-    if (!soundEnabled) return;
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    
-    // Play ascending notes for celebration
-    const frequencies = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
-    frequencies.forEach((freq, index) => {
+    if (theme === 'halloween') {
+      // Evil laugh: Muajajaja
+      const laughPattern = [300, 280, 300, 280, 300]; // Alternating pitches
+      laughPattern.forEach((freq, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = freq;
+        oscillator.type = 'sawtooth';
+        
+        const startTime = audioContext.currentTime + (index * 0.2);
+        gainNode.gain.setValueAtTime(0.3, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.15);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.15);
+      });
+    } else if (theme === 'christmas') {
+      // Bell ring
+      const frequencies = [1047, 2093]; // C6 and C7 for bell effect
+      frequencies.forEach((freq, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = freq;
+        oscillator.type = 'sine';
+        
+        const startTime = audioContext.currentTime + (index * 0.05);
+        gainNode.gain.setValueAtTime(0.2, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.4);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.4);
+      });
+    } else {
+      // Default beep
       const oscillator = audioContext.createOscillator();
       const gainNode = audioContext.createGain();
       
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
       
-      oscillator.frequency.value = freq;
+      oscillator.frequency.value = 800;
       oscillator.type = 'sine';
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
       
-      const startTime = audioContext.currentTime + (index * 0.15);
-      gainNode.gain.setValueAtTime(0.2, startTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.2);
+    }
+  };
+
+  const playCelebration = () => {
+    if (!soundEnabled) return;
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    
+    if (theme === 'halloween') {
+      // Spooky celebration
+      const frequencies = [300, 250, 200, 150];
+      frequencies.forEach((freq, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = freq;
+        oscillator.type = 'sawtooth';
+        
+        const startTime = audioContext.currentTime + (index * 0.2);
+        gainNode.gain.setValueAtTime(0.25, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.5);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.5);
+      });
+    } else if (theme === 'christmas') {
+      // Jingle bells melody
+      const jingleBells = [
+        { freq: 659.25, duration: 0.2 }, // E
+        { freq: 659.25, duration: 0.2 }, // E
+        { freq: 659.25, duration: 0.4 }, // E
+        { freq: 659.25, duration: 0.2 }, // E
+        { freq: 659.25, duration: 0.2 }, // E
+        { freq: 659.25, duration: 0.4 }, // E
+        { freq: 659.25, duration: 0.2 }, // E
+        { freq: 783.99, duration: 0.2 }, // G
+        { freq: 523.25, duration: 0.2 }, // C
+        { freq: 587.33, duration: 0.2 }, // D
+        { freq: 659.25, duration: 0.6 }, // E
+      ];
       
-      oscillator.start(startTime);
-      oscillator.stop(startTime + 0.3);
-    });
+      let currentTime = 0;
+      jingleBells.forEach((note) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = note.freq;
+        oscillator.type = 'sine';
+        
+        const startTime = audioContext.currentTime + currentTime;
+        gainNode.gain.setValueAtTime(0.15, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + note.duration);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + note.duration);
+        
+        currentTime += note.duration;
+      });
+    } else {
+      // Default celebration
+      const frequencies = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+      frequencies.forEach((freq, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = freq;
+        oscillator.type = 'sine';
+        
+        const startTime = audioContext.currentTime + (index * 0.15);
+        gainNode.gain.setValueAtTime(0.2, startTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.3);
+        
+        oscillator.start(startTime);
+        oscillator.stop(startTime + 0.3);
+      });
+    }
   };
 
   const fetchMonthlyLeaderboard = async (githubToken: string) => {
@@ -409,6 +514,7 @@ const Index = () => {
     <div className="min-h-screen bg-background p-6">
       {prCount !== null && (
         <div className="fixed top-6 right-6 flex gap-3 z-10">
+          <ThemeSelector />
           <div className="flex items-center gap-2 bg-background border rounded-md px-3 py-2">
             <Checkbox 
               id="sound-toggle"
