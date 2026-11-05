@@ -11,9 +11,14 @@ interface LeaderboardEntry {
 interface PRLeaderboardProps {
   topEntries: LeaderboardEntry[];
   bottomEntries: LeaderboardEntry[];
+  onSelectContributor?: (entry: LeaderboardEntry) => void;
 }
 
-export const PRLeaderboard = ({ topEntries, bottomEntries }: PRLeaderboardProps) => {
+export const PRLeaderboard = ({
+  topEntries,
+  bottomEntries,
+  onSelectContributor,
+}: PRLeaderboardProps) => {
   const getMedalIcon = (index: number) => {
     if (index === 0) return <Trophy className="w-5 h-5 text-yellow-500" />;
     if (index === 1) return <Medal className="w-5 h-5 text-gray-400" />;
@@ -39,9 +44,11 @@ export const PRLeaderboard = ({ topEntries, bottomEntries }: PRLeaderboardProps)
               </p>
             ) : (
               topEntries.map((entry, index) => (
-                <div
+                <button
                   key={entry.login}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
+                  type="button"
+                  onClick={() => onSelectContributor?.(entry)}
+                  className="w-full text-left flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
                 >
                   <div className="flex items-center gap-2 flex-1">
                     <span className="w-6 text-center font-semibold text-sm">
