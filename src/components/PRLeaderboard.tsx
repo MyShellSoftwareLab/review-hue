@@ -11,9 +11,14 @@ interface LeaderboardEntry {
 interface PRLeaderboardProps {
   topEntries: LeaderboardEntry[];
   bottomEntries: LeaderboardEntry[];
+  onSelectContributor?: (entry: LeaderboardEntry) => void;
 }
 
-export const PRLeaderboard = ({ topEntries, bottomEntries }: PRLeaderboardProps) => {
+export const PRLeaderboard = ({
+  topEntries,
+  bottomEntries,
+  onSelectContributor,
+}: PRLeaderboardProps) => {
   const getMedalIcon = (index: number) => {
     if (index === 0) return <Trophy className="w-5 h-5 text-yellow-500" />;
     if (index === 1) return <Medal className="w-5 h-5 text-gray-400" />;
@@ -29,7 +34,7 @@ export const PRLeaderboard = ({ topEntries, bottomEntries }: PRLeaderboardProps)
             <Trophy className="w-5 h-5" />
             Top Contributors
           </CardTitle>
-          <p className="text-sm text-muted-foreground">Most PRs assigned this month</p>
+          <p className="text-sm text-muted-foreground">Most PRs in your repos this month</p>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -39,9 +44,11 @@ export const PRLeaderboard = ({ topEntries, bottomEntries }: PRLeaderboardProps)
               </p>
             ) : (
               topEntries.map((entry, index) => (
-                <div
+                <button
                   key={entry.login}
-                  className="flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
+                  type="button"
+                  onClick={() => onSelectContributor?.(entry)}
+                  className="w-full text-left flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors"
                 >
                   <div className="flex items-center gap-2 flex-1">
                     <span className="w-6 text-center font-semibold text-sm">
@@ -59,7 +66,7 @@ export const PRLeaderboard = ({ topEntries, bottomEntries }: PRLeaderboardProps)
                   <span className="text-sm font-bold">
                     {entry.prCount}
                   </span>
-                </div>
+                </button>
               ))
             )}
           </div>
@@ -70,7 +77,7 @@ export const PRLeaderboard = ({ topEntries, bottomEntries }: PRLeaderboardProps)
         <Card className="w-[300px]">
           <CardHeader>
             <CardTitle className="text-base">Least Busy</CardTitle>
-            <p className="text-sm text-muted-foreground">Fewest PRs assigned this month</p>
+            <p className="text-sm text-muted-foreground">Fewest PRs in your repos this month</p>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">

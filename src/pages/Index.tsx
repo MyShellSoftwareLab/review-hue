@@ -4,6 +4,7 @@ import { PRCounter } from "@/components/PRCounter";
 import { PRCreatorCards } from "@/components/PRCreatorCards";
 import { PRLeaderboard } from "@/components/PRLeaderboard";
 import { PRHeatmap } from "@/components/PRHeatmap";
+import { ContributorPRsDialog } from "@/components/ContributorPRsDialog";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -18,6 +19,8 @@ interface PullRequest {
   title: string;
   html_url: string;
   created_at: string;
+  state?: string;
+  pull_request?: { merged_at?: string | null };
   user: {
     login: string;
     avatar_url: string;
@@ -50,6 +53,9 @@ const Index = () => {
   const [topLeaderboard, setTopLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [bottomLeaderboard, setBottomLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
+  const [monthlyPRs, setMonthlyPRs] = useState<PullRequest[]>([]);
+  const [selectedContributor, setSelectedContributor] =
+    useState<LeaderboardEntry | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const previousPrCountRef = useRef<number | null>(null);
@@ -198,6 +204,8 @@ const Index = () => {
         hasMore = data.items.length === 100;
         page++;
       }
+
+      setMonthlyPRs(allPRs);
       
       // Count PRs by creator
       const creatorsMap = new Map<string, LeaderboardEntry>();
@@ -436,6 +444,8 @@ const Index = () => {
     setTopLeaderboard([]);
     setBottomLeaderboard([]);
     setHeatmapData([]);
+    setMonthlyPRs([]);
+    setSelectedContributor(null);
     previousPrCountRef.current = null;
     
     // Clear token from localStorage
@@ -523,14 +533,24 @@ const Index = () => {
       {prCount === null ? (
         <div className="min-h-screen flex items-center justify-center">
           <div className="w-full max-w-4xl">
-            <TokenInput onSubmit={fetchPRs} isLoading={isLoading} />
+            <TokenInput
+              onSubmit={(t) => {
+                fetchPRs(t);
+                fetchMonthlyLeaderboard(t);
+              }}
+              isLoading={isLoading}
+            />
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-6 h-screen pt-20 px-6">
           <div className="flex justify-end border-r pr-6">
             <div className="w-full max-w-md">
-              <PRLeaderboard topEntries={topLeaderboard} bottomEntries={bottomLeaderboard} />
+              <PRLeaderboard
+                topEntries={topLeaderboard}
+                bottomEntries={bottomLeaderboard}
+                onSelectContributor={setSelectedContributor}
+              />
             </div>
           </div>
           
@@ -548,6 +568,16 @@ const Index = () => {
           </div>
         </div>
       )}
+
+      <ContributorPRsDialog
+        contributor={selectedContributor}
+        prs={monthlyPRs.filter(
+          (pr) => pr.user.login === selectedContributor?.login
+        )}
+        onOpenChange={(open) => {
+          if (!open) setSelectedContributor(null);
+        }}
+      />
     </div>
   );
 };
