@@ -533,7 +533,13 @@ const Index = () => {
       {prCount === null ? (
         <div className="min-h-screen flex items-center justify-center">
           <div className="w-full max-w-4xl">
-            <TokenInput onSubmit={fetchPRs} isLoading={isLoading} />
+            <TokenInput
+              onSubmit={(t) => {
+                fetchPRs(t);
+                fetchMonthlyLeaderboard(t);
+              }}
+              isLoading={isLoading}
+            />
           </div>
         </div>
       ) : (

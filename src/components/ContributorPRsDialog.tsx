@@ -27,7 +27,7 @@ interface ContributorPRsDialogProps {
 
 const getRepoName = (url: string) => {
   const parts = url.split("/");
-  return `${parts[parts.length - 3]}/${parts[parts.length - 2]}`;
+  return `${parts[parts.length - 4]}/${parts[parts.length - 3]}`;
 };
 
 const getPRState = (pr: PRSummary) => {
