@@ -180,7 +180,7 @@ const Index = () => {
       
       while (hasMore) {
         const prsResponse = await fetch(
-          `https://api.github.com/search/issues?q=type:pr+review-requested:${user.login}+created:>=${formattedDate}&per_page=100&page=${page}`,
+          `https://api.github.com/search/issues?q=type:pr+user:${user.login}+created:>=${formattedDate}&per_page=100&page=${page}`,
           {
             headers: {
               Authorization: `token ${githubToken}`,
