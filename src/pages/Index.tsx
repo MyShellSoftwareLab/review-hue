@@ -542,7 +542,7 @@ const Index = () => {
             <div className="w-full max-w-md">
               <PRLeaderboard
                 topEntries={topLeaderboard}
-                bottomEntries={bottomEntries}
+                bottomEntries={bottomLeaderboard}
                 onSelectContributor={setSelectedContributor}
               />
             </div>
