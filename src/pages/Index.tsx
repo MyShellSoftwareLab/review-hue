@@ -540,7 +540,11 @@ const Index = () => {
         <div className="grid grid-cols-3 gap-6 h-screen pt-20 px-6">
           <div className="flex justify-end border-r pr-6">
             <div className="w-full max-w-md">
-              <PRLeaderboard topEntries={topLeaderboard} bottomEntries={bottomLeaderboard} />
+              <PRLeaderboard
+                topEntries={topLeaderboard}
+                bottomEntries={bottomEntries}
+                onSelectContributor={setSelectedContributor}
+              />
             </div>
           </div>
           
