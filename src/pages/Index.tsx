@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { LogOut, RefreshCw, Volume2 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeSelector } from "@/components/ThemeSelector";
+import christmasAudioAsset from "@/assets/jojojo-santa.mp3.asset.json";
 
 interface PullRequest {
   id: number;
@@ -74,48 +75,42 @@ const Index = () => {
       return;
     }
     
-    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-    
     if (theme === 'christmas') {
-      // Bell ring
-      const frequencies = [1047, 2093]; // C6 and C7 for bell effect
-      frequencies.forEach((freq, index) => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = freq;
-        oscillator.type = 'sine';
-        
-        const startTime = audioContext.currentTime + (index * 0.05);
-        gainNode.gain.setValueAtTime(0.2, startTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + 0.4);
-        
-        oscillator.start(startTime);
-        oscillator.stop(startTime + 0.4);
-      });
-    } else {
-      // Default beep
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.frequency.value = 800;
-      oscillator.type = 'sine';
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.2);
+      // Play uploaded Santa "jojojo" audio
+      const audio = new Audio(christmasAudioAsset.url);
+      audio.volume = 0.6;
+      audio.play().catch(err => console.error('Error playing Christmas sound:', err));
+      return;
     }
+
+    const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+
+    // Default beep
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.frequency.value = 800;
+    oscillator.type = 'sine';
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
   };
 
   const playCelebration = () => {
     if (!soundEnabled) return;
+    if (theme === 'christmas') {
+      // Play uploaded Santa "jojojo" audio
+      const audio = new Audio(christmasAudioAsset.url);
+      audio.volume = 0.6;
+      audio.play().catch(err => console.error('Error playing Christmas sound:', err));
+      return;
+    }
+
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
     
     if (theme === 'halloween') {
