@@ -133,42 +133,6 @@ const Index = () => {
         oscillator.start(startTime);
         oscillator.stop(startTime + 0.5);
       });
-    } else if (theme === 'christmas') {
-      // Jingle bells melody
-      const jingleBells = [
-        { freq: 659.25, duration: 0.2 }, // E
-        { freq: 659.25, duration: 0.2 }, // E
-        { freq: 659.25, duration: 0.4 }, // E
-        { freq: 659.25, duration: 0.2 }, // E
-        { freq: 659.25, duration: 0.2 }, // E
-        { freq: 659.25, duration: 0.4 }, // E
-        { freq: 659.25, duration: 0.2 }, // E
-        { freq: 783.99, duration: 0.2 }, // G
-        { freq: 523.25, duration: 0.2 }, // C
-        { freq: 587.33, duration: 0.2 }, // D
-        { freq: 659.25, duration: 0.6 }, // E
-      ];
-      
-      let currentTime = 0;
-      jingleBells.forEach((note) => {
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-        
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-        
-        oscillator.frequency.value = note.freq;
-        oscillator.type = 'sine';
-        
-        const startTime = audioContext.currentTime + currentTime;
-        gainNode.gain.setValueAtTime(0.15, startTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + note.duration);
-        
-        oscillator.start(startTime);
-        oscillator.stop(startTime + note.duration);
-        
-        currentTime += note.duration;
-      });
     } else {
       // Default celebration
       const frequencies = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
