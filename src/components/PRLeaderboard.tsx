@@ -34,7 +34,7 @@ export const PRLeaderboard = ({
             <Trophy className="w-5 h-5" />
             Top Contributors
           </CardTitle>
-          <p className="text-sm text-muted-foreground">Most PRs assigned this month</p>
+          <p className="text-sm text-muted-foreground">Most PRs in your repos this month</p>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -77,7 +77,7 @@ export const PRLeaderboard = ({
         <Card className="w-[300px]">
           <CardHeader>
             <CardTitle className="text-base">Least Busy</CardTitle>
-            <p className="text-sm text-muted-foreground">Fewest PRs assigned this month</p>
+            <p className="text-sm text-muted-foreground">Fewest PRs in your repos this month</p>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
