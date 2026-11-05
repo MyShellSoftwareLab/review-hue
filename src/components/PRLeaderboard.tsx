@@ -66,7 +66,7 @@ export const PRLeaderboard = ({
                   <span className="text-sm font-bold">
                     {entry.prCount}
                   </span>
-                </div>
+                </button>
               ))
             )}
           </div>
