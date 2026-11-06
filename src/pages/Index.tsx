@@ -54,8 +54,10 @@ const Index = () => {
   const [bottomLeaderboard, setBottomLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [heatmapData, setHeatmapData] = useState<HeatmapData[]>([]);
   const [monthlyPRs, setMonthlyPRs] = useState<PullRequest[]>([]);
+  const [openPRs, setOpenPRs] = useState<PullRequest[]>([]);
   const [selectedContributor, setSelectedContributor] =
     useState<LeaderboardEntry | null>(null);
+  const [selectedCreator, setSelectedCreator] = useState<PRCreator | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const previousPrCountRef = useRef<number | null>(null);
@@ -317,24 +319,36 @@ const Index = () => {
 
       const user = await userResponse.json();
 
-      // Get pull requests where the user is requested as a reviewer
-      const prsResponse = await fetch(
-        `https://api.github.com/search/issues?q=type:pr+state:open+review-requested:${user.login}`,
-        {
-          headers: {
-            Authorization: `token ${githubToken}`,
-            Accept: "application/vnd.github.v3+json",
-          },
-        }
-      );
+      // Get all open pull requests in repositories owned by the token's account
+      let allItems: PullRequest[] = [];
+      let page = 1;
+      let hasMore = true;
 
-      if (!prsResponse.ok) {
-        throw new Error("Failed to fetch pull requests");
+      while (hasMore) {
+        const prsResponse = await fetch(
+          `https://api.github.com/search/issues?q=type:pr+state:open+user:${user.login}&per_page=100&page=${page}`,
+          {
+            headers: {
+              Authorization: `token ${githubToken}`,
+              Accept: "application/vnd.github.v3+json",
+            },
+          }
+        );
+
+        if (!prsResponse.ok) {
+          throw new Error("Failed to fetch pull requests");
+        }
+
+        const pageData = await prsResponse.json();
+        allItems = [...allItems, ...pageData.items];
+        hasMore = pageData.items.length === 100;
+        page++;
       }
 
-      const data = await prsResponse.json();
+      const data = { total_count: allItems.length, items: allItems };
       setPrCount(data.total_count);
-      
+      setOpenPRs(allItems);
+
       // Fetch unresolved comments for each PR
       const prCommentsPromises = data.items.map(async (pr: PullRequest) => {
         const prNumber = pr.html_url.split('/').pop();
@@ -445,7 +459,9 @@ const Index = () => {
     setBottomLeaderboard([]);
     setHeatmapData([]);
     setMonthlyPRs([]);
+    setOpenPRs([]);
     setSelectedContributor(null);
+    setSelectedCreator(null);
     previousPrCountRef.current = null;
     
     // Clear token from localStorage
@@ -563,7 +579,10 @@ const Index = () => {
           <div className="flex justify-start pl-6">
             <div className="space-y-8">
               <PRCounter count={prCount} />
-              <PRCreatorCards creators={prCreators} />
+              <PRCreatorCards
+                creators={prCreators}
+                onSelectCreator={setSelectedCreator}
+              />
             </div>
           </div>
         </div>
@@ -576,6 +595,25 @@ const Index = () => {
         )}
         onOpenChange={(open) => {
           if (!open) setSelectedContributor(null);
+        }}
+      />
+
+      <ContributorPRsDialog
+        contributor={
+          selectedCreator
+            ? {
+                login: selectedCreator.login,
+                avatar_url: selectedCreator.avatar_url,
+                prCount: selectedCreator.count,
+              }
+            : null
+        }
+        prs={openPRs.filter(
+          (pr) => pr.user.login === selectedCreator?.login
+        )}
+        description="Open pull requests in your repositories"
+        onOpenChange={(open) => {
+          if (!open) setSelectedCreator(null);
         }}
       />
     </div>
