@@ -12,16 +12,23 @@ interface PRCreator {
 
 interface PRCreatorCardsProps {
   creators: PRCreator[];
+  onSelectCreator?: (creator: PRCreator) => void;
 }
 
-export const PRCreatorCards = ({ creators }: PRCreatorCardsProps) => {
+export const PRCreatorCards = ({ creators, onSelectCreator }: PRCreatorCardsProps) => {
   if (creators.length === 0) return null;
 
   return (
     <div className="flex justify-center w-full">
       <div className="flex flex-wrap justify-center gap-4 max-w-[900px]">
         {creators.map((creator) => (
-        <Card key={creator.login} className={`hover:shadow-lg transition-all w-[280px] ${creator.unresolvedComments > 0 ? 'border-destructive/50 border-2' : ''}`}>
+        <button
+          key={creator.login}
+          type="button"
+          onClick={() => onSelectCreator?.(creator)}
+          className="text-left"
+        >
+        <Card className={`hover:shadow-lg hover:bg-accent transition-all w-[280px] cursor-pointer ${creator.unresolvedComments > 0 ? 'border-destructive/50 border-2' : ''}`}>
           <CardContent className="flex items-center gap-3 p-4">
             <Avatar className="h-12 w-12 flex-shrink-0">
               <AvatarImage src={creator.avatar_url} alt={creator.login} />
@@ -44,6 +51,7 @@ export const PRCreatorCards = ({ creators }: PRCreatorCardsProps) => {
             </div>
           </CardContent>
         </Card>
+        </button>
         ))}
       </div>
     </div>

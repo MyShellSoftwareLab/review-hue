@@ -23,6 +23,7 @@ interface ContributorPRsDialogProps {
   contributor: { login: string; avatar_url: string; prCount: number } | null;
   prs: PRSummary[];
   onOpenChange: (open: boolean) => void;
+  description?: string;
 }
 
 const getRepoName = (url: string) => {
@@ -45,6 +46,7 @@ export const ContributorPRsDialog = ({
   contributor,
   prs,
   onOpenChange,
+  description = "Pull requests opened this month in your repositories",
 }: ContributorPRsDialogProps) => {
   const sorted = [...prs].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -64,9 +66,7 @@ export const ContributorPRsDialog = ({
             <span>{contributor?.login}</span>
             <Badge variant="outline">{sorted.length} PRs</Badge>
           </DialogTitle>
-          <DialogDescription>
-            Pull requests opened this month in your repositories
-          </DialogDescription>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <div className="max-h-[60vh] overflow-y-auto space-y-2 pr-1">
