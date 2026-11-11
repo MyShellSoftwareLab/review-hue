@@ -108,7 +108,7 @@ npx vite build --base=/review-hue/
 
 ### Link previews on your domain
 
-Social networks need full URLs for link preview images, so `index.html` points `og:url`, `og:image`, and `twitter:image` at `https://review-hue.lovable.app`. On your own domain, replace that address in `index.html` so shared links show your copy's preview image.
+Social networks need full URLs for link previews. In `index.html`, `og:url` points at `https://review-hue.lovable.app`, and `og:image` and `twitter:image` load the preview image from this GitHub repository. On your own domain, set `og:url` to your address. You can also point the image tags at `https://your-domain/og-image.png` to serve the image yourself.
 
 ### Security notes
 
