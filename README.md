@@ -106,6 +106,10 @@ The build assumes the site is served from the domain root (`/`). To serve it fro
 npx vite build --base=/review-hue/
 ```
 
+### Link previews on your domain
+
+Social networks need full URLs for link preview images, so `index.html` points `og:url`, `og:image`, and `twitter:image` at `https://review-hue.lovable.app`. On your own domain, replace that address in `index.html` so shared links show your copy's preview image.
+
 ### Security notes
 
 - Serve the app over **HTTPS**. Users paste a GitHub token into it.
