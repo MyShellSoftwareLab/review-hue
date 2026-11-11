@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { TokenInput } from "@/components/TokenInput";
+import { Landing } from "@/components/Landing";
 import { PRCounter } from "@/components/PRCounter";
 import { PRCreatorCards } from "@/components/PRCreatorCards";
 import { PRLeaderboard } from "@/components/PRLeaderboard";
@@ -557,17 +558,15 @@ const Index = () => {
       )}
       
       {prCount === null ? (
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="w-full max-w-4xl">
-            <TokenInput
-              onSubmit={(t) => {
-                fetchPRs(t);
-                fetchMonthlyLeaderboard(t);
-              }}
-              isLoading={isLoading}
-            />
-          </div>
-        </div>
+        <Landing>
+          <TokenInput
+            onSubmit={(t) => {
+              fetchPRs(t);
+              fetchMonthlyLeaderboard(t);
+            }}
+            isLoading={isLoading}
+          />
+        </Landing>
       ) : (
         <div className="grid grid-cols-3 grid-rows-1 gap-6 h-[calc(100dvh-3rem)] pt-20 px-6">
           <div className="flex justify-center border-r pr-6 min-h-0">

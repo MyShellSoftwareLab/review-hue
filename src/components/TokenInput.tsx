@@ -26,7 +26,7 @@ export const TokenInput = ({ onSubmit, isLoading }: TokenInputProps) => {
         <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center">
           <Github className="w-8 h-8 text-primary" />
         </div>
-        <h2 className="text-2xl font-bold text-foreground">GitHub PR Monitor</h2>
+        <h2 className="text-2xl font-bold text-foreground">Connect your GitHub</h2>
         <p className="text-muted-foreground">
           Enter your GitHub token to check pull requests awaiting review
         </p>
