@@ -19,16 +19,16 @@ export const PRCreatorCards = ({ creators, onSelectCreator }: PRCreatorCardsProp
   if (creators.length === 0) return null;
 
   return (
-    <div className="flex justify-center w-full">
-      <div className="flex flex-wrap justify-center gap-4 max-w-[900px]">
+    <div className="w-full">
+      <div className="flex flex-col gap-4">
         {creators.map((creator) => (
         <button
           key={creator.login}
           type="button"
           onClick={() => onSelectCreator?.(creator)}
-          className="text-left"
+          className="text-left w-full"
         >
-        <Card className={`hover:shadow-lg hover:bg-accent transition-all w-[280px] cursor-pointer ${creator.unresolvedComments > 0 ? 'border-destructive/50 border-2' : ''}`}>
+        <Card className={`hover:shadow-lg hover:bg-accent transition-all w-full cursor-pointer ${creator.unresolvedComments > 0 ? 'border-destructive/50 border-2' : ''}`}>
           <CardContent className="flex items-center gap-3 p-4">
             <Avatar className="h-12 w-12 flex-shrink-0">
               <AvatarImage src={creator.avatar_url} alt={creator.login} />

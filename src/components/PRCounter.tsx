@@ -27,7 +27,7 @@ export const PRCounter = ({ count, className }: PRCounterProps) => {
   return (
     <div className={cn("flex flex-col items-center gap-6", className)}>
       <div className={cn(
-        "rounded-2xl p-12 transition-all duration-500 border-2",
+        "w-full flex justify-center rounded-2xl p-12 transition-all duration-500 border-2",
         getStatusBg(),
         count > 5 ? "border-critical/30" : count > 2 ? "border-warning/30" : "border-success/30"
       )}>

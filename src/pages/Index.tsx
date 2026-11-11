@@ -9,10 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { LogOut, RefreshCw, Volume2 } from "lucide-react";
+import { LogOut, Play, RefreshCw, Volume2 } from "lucide-react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ThemeSelector } from "@/components/ThemeSelector";
-import christmasAudioAsset from "@/assets/jojojo-santa.mp3.asset.json";
+const CHRISTMAS_SOUND_URL = "/christmas-jingle-bells.mp3";
 
 interface PullRequest {
   id: number;
@@ -72,8 +72,8 @@ const Index = () => {
     }
   }, []);
 
-  const playBeep = () => {
-    if (!soundEnabled) return;
+  const playBeep = (force = false) => {
+    if (!soundEnabled && !force) return;
     
     if (theme === 'halloween') {
       // Play uploaded Halloween scream audio
@@ -84,8 +84,8 @@ const Index = () => {
     }
     
     if (theme === 'christmas') {
-      // Play uploaded Santa "jojojo" audio
-      const audio = new Audio(christmasAudioAsset.url);
+      // Play Christmas "Jingle Bells" audio
+      const audio = new Audio(CHRISTMAS_SOUND_URL);
       audio.volume = 0.6;
       audio.play().catch(err => console.error('Error playing Christmas sound:', err));
       return;
@@ -112,8 +112,8 @@ const Index = () => {
   const playCelebration = () => {
     if (!soundEnabled) return;
     if (theme === 'christmas') {
-      // Play uploaded Santa "jojojo" audio
-      const audio = new Audio(christmasAudioAsset.url);
+      // Play Christmas "Jingle Bells" audio
+      const audio = new Audio(CHRISTMAS_SOUND_URL);
       audio.volume = 0.6;
       audio.play().catch(err => console.error('Error playing Christmas sound:', err));
       return;
@@ -228,10 +228,10 @@ const Index = () => {
       const sortedLeaderboard = Array.from(creatorsMap.values())
         .sort((a, b) => b.prCount - a.prCount);
       
-      // Take top 5 and bottom 3
-      const topEntries = sortedLeaderboard.slice(0, 5);
-      const bottomEntries = sortedLeaderboard.length > 5 
-        ? sortedLeaderboard.slice(-3).reverse() 
+      // Show everyone: top list descending, least busy list ascending
+      const topEntries = sortedLeaderboard;
+      const bottomEntries = sortedLeaderboard.length > 1
+        ? [...sortedLeaderboard].reverse()
         : [];
       
       setTopLeaderboard(topEntries);
@@ -527,6 +527,16 @@ const Index = () => {
           <Button
             variant="outline"
             size="sm"
+            onClick={() => playBeep(true)}
+            className="gap-2"
+            title="Preview the current theme's notification sound"
+          >
+            <Play className="w-4 h-4" />
+            Play
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleRefresh}
             disabled={isLoading}
             className="gap-2"
@@ -559,9 +569,9 @@ const Index = () => {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-6 h-screen pt-20 px-6">
-          <div className="flex justify-end border-r pr-6">
-            <div className="w-full max-w-md">
+        <div className="grid grid-cols-3 grid-rows-1 gap-6 h-[calc(100dvh-3rem)] pt-20 px-6">
+          <div className="flex justify-center border-r pr-6 min-h-0">
+            <div className="w-full max-w-lg h-full min-h-0">
               <PRLeaderboard
                 topEntries={topLeaderboard}
                 bottomEntries={bottomLeaderboard}
@@ -576,8 +586,8 @@ const Index = () => {
             </div>
           </div>
           
-          <div className="flex justify-start pl-6">
-            <div className="space-y-8">
+          <div className="flex justify-center pr-6 min-h-0">
+            <div className="w-full max-w-lg h-full min-h-0 overflow-y-auto space-y-8">
               <PRCounter count={prCount} />
               <PRCreatorCards
                 creators={prCreators}
