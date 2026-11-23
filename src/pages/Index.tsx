@@ -46,6 +46,65 @@ interface HeatmapData {
   days: { dayOfWeek: number; count: number; date: string }[];
 }
 
+// GitHub's Search API only returns the first 1000 results of any query.
+// To fetch more, recursively split the date range in halves until each
+// sub-range has <= 1000 matches, then page through each one.
+const SEARCH_RESULT_CAP = 1000;
+const SEARCH_PAGE_SIZE = 100;
+
+const toSearchDate = (d: Date) => d.toISOString().replace(/\.\d{3}Z$/, "Z");
+
+const searchPRsCreatedBetween = async (
+  githubToken: string,
+  login: string,
+  start: Date,
+  end: Date
+): Promise<PullRequest[]> => {
+  const query = `type:pr user:${login} created:${toSearchDate(start)}..${toSearchDate(end)}`;
+  const fetchPage = async (page: number) => {
+    const response = await fetch(
+      `https://api.github.com/search/issues?q=${encodeURIComponent(query)}&per_page=${SEARCH_PAGE_SIZE}&page=${page}`,
+      {
+        headers: {
+          Authorization: `token ${githubToken}`,
+          Accept: "application/vnd.github.v3+json",
+        },
+      }
+    );
+    if (!response.ok) {
+      throw new Error(`GitHub search failed (${response.status})`);
+    }
+    return (await response.json()) as { total_count: number; items: PullRequest[] };
+  };
+
+  const first = await fetchPage(1);
+  const rangeMs = end.getTime() - start.getTime();
+
+  // Too many results for one query: split the range in two (both bounds are inclusive).
+  if (first.total_count > SEARCH_RESULT_CAP && rangeMs > 1000) {
+    const mid = new Date(start.getTime() + Math.floor(rangeMs / 2000) * 1000);
+    const left = await searchPRsCreatedBetween(githubToken, login, start, mid);
+    const right = await searchPRsCreatedBetween(
+      githubToken,
+      login,
+      new Date(mid.getTime() + 1000),
+      end
+    );
+    return [...left, ...right];
+  }
+
+  const items = [...first.items];
+  const total = Math.min(first.total_count, SEARCH_RESULT_CAP);
+  let page = 2;
+  while (items.length < total && (page - 1) * SEARCH_PAGE_SIZE < SEARCH_RESULT_CAP) {
+    const data = await fetchPage(page);
+    if (data.items.length === 0) break;
+    items.push(...data.items);
+    page++;
+  }
+  return items;
+};
+
 const Index = () => {
   const { theme } = useTheme();
   const [token, setToken] = useState<string>("");
@@ -169,8 +228,7 @@ const Index = () => {
     try {
       const now = new Date();
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const formattedDate = firstDayOfMonth.toISOString().split('T')[0];
-      
+
       const userResponse = await fetch("https://api.github.com/user", {
         headers: {
           Authorization: `token ${githubToken}`,
@@ -182,31 +240,15 @@ const Index = () => {
       
       const user = await userResponse.json();
       
-      // Fetch all PRs with pagination
-      let allPRs: PullRequest[] = [];
-      let page = 1;
-      let hasMore = true;
-      
-      while (hasMore) {
-        const prsResponse = await fetch(
-          `https://api.github.com/search/issues?q=type:pr+user:${user.login}+created:>=${formattedDate}&per_page=100&page=${page}`,
-          {
-            headers: {
-              Authorization: `token ${githubToken}`,
-              Accept: "application/vnd.github.v3+json",
-            },
-          }
-        );
-
-        if (!prsResponse.ok) return;
-        
-        const data = await prsResponse.json();
-        allPRs = [...allPRs, ...data.items];
-        
-        // Check if there are more pages
-        hasMore = data.items.length === 100;
-        page++;
-      }
+      // Fetch all PRs created this month (splits the range to bypass the 1000-result cap)
+      const fetched = await searchPRsCreatedBetween(
+        githubToken,
+        user.login,
+        firstDayOfMonth,
+        now
+      );
+      // Dedupe in case a PR shows up in two sub-ranges
+      const allPRs = Array.from(new Map(fetched.map((pr) => [pr.id, pr])).values());
 
       setMonthlyPRs(allPRs);
       
@@ -342,7 +384,7 @@ const Index = () => {
 
         const pageData = await prsResponse.json();
         allItems = [...allItems, ...pageData.items];
-        hasMore = pageData.items.length === 100;
+        hasMore = pageData.items.length === 100 && allItems.length < 1000;
         page++;
       }
 
